@@ -1,6 +1,9 @@
 package com.srijon.orderflow.service.impl;
 
+import com.srijon.orderflow.dto.ProductRequestDto;
+import com.srijon.orderflow.dto.ProductResponseDto;
 import com.srijon.orderflow.entity.Product;
+import com.srijon.orderflow.mapper.ProductMapper;
 import com.srijon.orderflow.repository.ProductRepository;
 import com.srijon.orderflow.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -15,38 +18,48 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductMapper mapper;
 
     @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductResponseDto> getAllProducts() {
+        return productRepository.findAll()
+                .stream()
+                .map(mapper :: toResponseDto)
+                .toList();
     }
 
     @Override
-    public Product getProductById(Long id) {
-        return productRepository
-                .findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND , "Product not found"));
+    public ProductResponseDto getProductById(Long id) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND , "Product not found"));;
+
+        return mapper.toResponseDto(product);
+
     }
 
     @Override
-    public Product saveProduct(Product product) {
-        return productRepository.save(product);
+    public ProductResponseDto saveProduct(ProductRequestDto productRequestDto) {
+
+        Product product = mapper.toEntity(productRequestDto);
+
+        return mapper.toResponseDto(productRepository.save(product));
     }
 
     @Override
-    public Product updateProduct(Long id, Product product) {
+    public ProductResponseDto updateProduct(Long id, ProductRequestDto productRequestDto) {
 
         Product update = productRepository
                 .findById(id)
                 .orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND , "Product not found"));
 
         //Updating the product if we find it
-        update.setName(product.getName());
-        update.setPrice(product.getPrice());
-        update.setAvailableStock(product.getAvailableStock());
-        update.setDescription(product.getDescription());
+        update.setName(productRequestDto.getName());
+        update.setPrice(productRequestDto.getPrice());
+        update.setAvailableStock(productRequestDto.getAvailableStock());
+        update.setDescription(productRequestDto.getDescription());
 
-        return productRepository.save(update);
+        return mapper.toResponseDto(productRepository.save(update));
     }
 
     @Override

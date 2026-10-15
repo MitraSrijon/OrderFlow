@@ -1,6 +1,8 @@
 package com.srijon.orderflow.service;
 
-import com.srijon.orderflow.entity.Product;
+import com.srijon.orderflow.dto.ProductRequestDto;
+import com.srijon.orderflow.dto.ProductResponseDto;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -8,16 +10,16 @@ import java.util.List;
 public interface ProductService {
 
     //Retrieve all the products
-    public List<Product> getAllProducts();
+    public List<ProductResponseDto> getAllProducts();
 
     //Get Product by id
-    public  Product getProductById(Long id);
+    public  ProductResponseDto getProductById(Long id);
 
     //Save a product
-    public Product saveProduct(Product product);
+    public ProductResponseDto saveProduct(ProductRequestDto productRequestDto);
 
     //update a product
-    public Product updateProduct(Long id , Product product);
+    public ProductResponseDto updateProduct(Long id , ProductRequestDto productRequestDto);
 
     //Delete a product
     public void deleteProduct(Long id);

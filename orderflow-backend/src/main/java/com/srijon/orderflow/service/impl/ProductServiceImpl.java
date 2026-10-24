@@ -25,7 +25,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
         return productRepository.findAll(pageable)
-                .map(mapper :: toResponseDto);
+                .map(mapper::toResponseDto);
     }
 
     @Override
@@ -70,5 +70,12 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow( () -> new ResponseStatusException( HttpStatus.NOT_FOUND , "Product not found"));
 
         productRepository.delete(deleteProduct);
+    }
+
+    @Override
+    public Page<ProductResponseDto> searchProducts(String name, Pageable pageable) {
+
+        return productRepository.findByNameContainingIgnoreCase(name , pageable)
+                .map(mapper::toResponseDto);
     }
 }

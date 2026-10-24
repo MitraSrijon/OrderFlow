@@ -25,4 +25,8 @@ public interface ProductService {
 
     //Delete a product
     public void deleteProduct(Long id);
+
+    //Search a product
+    Page<ProductResponseDto> searchProducts(
+            String name, Pageable pageable);
 }

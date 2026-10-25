@@ -1,25 +1,21 @@
-package com.srijon.orderflow.dto;
+package com.srijon.orderflow.dto.CategoryDto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class ProductResponseDto {
+@NoArgsConstructor
+public class CategoryResponseDto {
 
     private Long id;
 
     private String name;
 
     private String description;
-
-    private BigDecimal price;
-
-    private Integer availableStock;
 
     private LocalDateTime created;
 

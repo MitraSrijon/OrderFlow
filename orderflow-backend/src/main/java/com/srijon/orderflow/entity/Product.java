@@ -43,4 +43,8 @@ public class Product {
 
     @LastModifiedDate
     private LocalDateTime updated;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 }

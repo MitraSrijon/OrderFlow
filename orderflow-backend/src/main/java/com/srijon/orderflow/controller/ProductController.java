@@ -1,7 +1,7 @@
 package com.srijon.orderflow.controller;
 
-import com.srijon.orderflow.dto.ProductRequestDto;
-import com.srijon.orderflow.dto.ProductResponseDto;
+import com.srijon.orderflow.dto.ProductDto.ProductRequestDto;
+import com.srijon.orderflow.dto.ProductDto.ProductResponseDto;
 import com.srijon.orderflow.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.Set;
 
 @RestController

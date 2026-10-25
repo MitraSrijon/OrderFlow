@@ -1,5 +1,6 @@
-package com.srijon.orderflow.dto;
+package com.srijon.orderflow.dto.ProductDto;
 
+import com.srijon.orderflow.entity.Category;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -13,6 +14,10 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 public class ProductRequestDto {
+
+    @NotNull(message = "Category ID cannot be null")
+    @Positive(message = "Category ID cannot be negative")
+    private Long categoryId;
 
     @NotNull(message = "Name of the product cannot be blank")
     private String name;

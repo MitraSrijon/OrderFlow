@@ -1,12 +1,9 @@
 package com.srijon.orderflow.service;
 
-import com.srijon.orderflow.dto.ProductRequestDto;
-import com.srijon.orderflow.dto.ProductResponseDto;
+import com.srijon.orderflow.dto.ProductDto.ProductRequestDto;
+import com.srijon.orderflow.dto.ProductDto.ProductResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-
-import java.util.List;
 
 //Basic structure of Product Service
 public interface ProductService {
@@ -29,4 +26,7 @@ public interface ProductService {
     //Search a product
     Page<ProductResponseDto> searchProducts(
             String name, Pageable pageable);
+
+    interface CategoryService {
+    }
 }

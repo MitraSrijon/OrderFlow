@@ -4,6 +4,8 @@ import com.srijon.orderflow.dto.ProductDto.ProductRequestDto;
 import com.srijon.orderflow.dto.ProductDto.ProductResponseDto;
 import com.srijon.orderflow.service.ProductService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -148,5 +150,43 @@ public class ProductController {
                 productService.searchProducts(name.trim(), pageable));
     }
 
+    @GetMapping("/category/{categoryId}")
+    public Page<ProductResponseDto> getProductsByCategory(
+            @PathVariable Long categoryId,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        if (page < 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Page cannot be negative");
+        }
+
+        if (size < 1 || size > 100) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Page size must be between 1 and 100");
+        }
+
+        if (!Set.of("id", "name", "price", "availableStock", "created", "updated")
+                .contains(sortBy)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Invalid sort field");
+        }
+
+        if (!direction.equalsIgnoreCase("asc")
+                && !direction.equalsIgnoreCase("desc")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Direction must be asc or desc");
+        }
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return productService.getProductsByCategory(categoryId, pageable);
+    }
 
 }

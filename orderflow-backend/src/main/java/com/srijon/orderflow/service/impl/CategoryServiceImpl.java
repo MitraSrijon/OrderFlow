@@ -6,6 +6,7 @@ import com.srijon.orderflow.dto.CategoryDto.CategoryResponseDto;
 import com.srijon.orderflow.entity.Category;
 import com.srijon.orderflow.mapper.CategoryMapper;
 import com.srijon.orderflow.repository.CategoryRepository;
+import com.srijon.orderflow.repository.ProductRepository;
 import com.srijon.orderflow.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper mapper;
+    private final ProductRepository productRepository;
 
     @Override
     public Page<CategoryResponseDto> getAllCategories(Pageable pageable) {
@@ -85,6 +87,13 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Category not found"));
+
+        if(productRepository.existsByCategoryId(id)){
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT ,
+                    "Cannot delete category because products are associated with it."
+            );
+        }
 
         categoryRepository.delete(category);
     }

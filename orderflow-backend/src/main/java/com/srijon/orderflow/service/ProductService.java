@@ -27,6 +27,6 @@ public interface ProductService {
     Page<ProductResponseDto> searchProducts(
             String name, Pageable pageable);
 
-    interface CategoryService {
-    }
+    //Search products by category
+    Page<ProductResponseDto> getProductsByCategory(Long categoryId ,  Pageable pageable);
 }

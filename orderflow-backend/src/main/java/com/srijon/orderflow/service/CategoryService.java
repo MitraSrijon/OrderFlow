@@ -2,8 +2,12 @@ package com.srijon.orderflow.service;
 
 import com.srijon.orderflow.dto.CategoryDto.CategoryRequestDto;
 import com.srijon.orderflow.dto.CategoryDto.CategoryResponseDto;
+import com.srijon.orderflow.dto.ProductDto.ProductResponseDto;
+import com.srijon.orderflow.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface CategoryService {
 
@@ -16,4 +20,5 @@ public interface CategoryService {
     CategoryResponseDto updateCategory(Long id, CategoryRequestDto categoryRequestDto);
 
     void deleteCategory(Long id);
+
 }

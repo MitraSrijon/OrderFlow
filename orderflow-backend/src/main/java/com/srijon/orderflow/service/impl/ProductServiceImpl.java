@@ -92,4 +92,13 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByNameContainingIgnoreCase(name , pageable)
                 .map(mapper::toResponseDto);
     }
+
+    @Override
+    public Page<ProductResponseDto> getProductsByCategory(Long categoryId, Pageable pageable) {
+
+        findByCategoryId(categoryId);
+
+        return productRepository.findByCategoryId(categoryId , pageable)
+                .map(mapper::toResponseDto);
+    }
 }

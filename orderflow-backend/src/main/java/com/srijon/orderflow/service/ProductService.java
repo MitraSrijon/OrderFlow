@@ -2,6 +2,7 @@ package com.srijon.orderflow.service;
 
 import com.srijon.orderflow.dto.ProductDto.ProductRequestDto;
 import com.srijon.orderflow.dto.ProductDto.ProductResponseDto;
+import com.srijon.orderflow.dto.ProductDto.StockUpdateRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -29,4 +30,10 @@ public interface ProductService {
 
     //Search products by category
     Page<ProductResponseDto> getProductsByCategory(Long categoryId ,  Pageable pageable);
+
+    //Update the stock quantity
+    ProductResponseDto updateStock(Long id , StockUpdateRequestDto stockUpdateRequestDto);
+
+    //Reducing the stock when an order is placed
+    void deductStock(Long productId, Integer quantity);
 }

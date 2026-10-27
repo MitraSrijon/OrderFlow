@@ -2,6 +2,7 @@ package com.srijon.orderflow.controller;
 
 import com.srijon.orderflow.dto.ProductDto.ProductRequestDto;
 import com.srijon.orderflow.dto.ProductDto.ProductResponseDto;
+import com.srijon.orderflow.dto.ProductDto.StockUpdateRequestDto;
 import com.srijon.orderflow.service.ProductService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -150,6 +151,7 @@ public class ProductController {
                 productService.searchProducts(name.trim(), pageable));
     }
 
+    //Searchhing a product with category ID
     @GetMapping("/category/{categoryId}")
     public Page<ProductResponseDto> getProductsByCategory(
             @PathVariable Long categoryId,
@@ -187,6 +189,16 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         return productService.getProductsByCategory(categoryId, pageable);
+    }
+
+    //Updating the stock of any particular product
+    @PatchMapping("/{id}/stock")
+    public ProductResponseDto  updateStock(
+            @PathVariable Long id,
+            @Valid @RequestBody StockUpdateRequestDto stockUpdateRequestDto
+            ){
+
+        return productService.updateStock(id , stockUpdateRequestDto);
     }
 
 }

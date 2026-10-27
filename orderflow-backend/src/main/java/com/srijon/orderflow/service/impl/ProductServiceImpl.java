@@ -2,6 +2,7 @@ package com.srijon.orderflow.service.impl;
 
 import com.srijon.orderflow.dto.ProductDto.ProductRequestDto;
 import com.srijon.orderflow.dto.ProductDto.ProductResponseDto;
+import com.srijon.orderflow.dto.ProductDto.StockUpdateRequestDto;
 import com.srijon.orderflow.entity.Category;
 import com.srijon.orderflow.entity.Product;
 import com.srijon.orderflow.mapper.ProductMapper;
@@ -100,5 +101,42 @@ public class ProductServiceImpl implements ProductService {
 
         return productRepository.findByCategoryId(categoryId , pageable)
                 .map(mapper::toResponseDto);
+    }
+
+    @Override
+    public ProductResponseDto updateStock(Long id, StockUpdateRequestDto stockUpdateRequestDto) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND , "Product does not exist"
+                ));
+
+        product.setAvailableStock(stockUpdateRequestDto.getQuantity());
+
+        return mapper.toResponseDto(productRepository.save(product));
+    }
+
+    @Override
+    public void deductStock(Long productId, Integer quantity) {
+
+        if(quantity == null || quantity <= 0){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST , "Ordered quantity must be greater than zero"
+            );
+        }
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,  "Product does not exist"
+                ));
+
+        if(product.getAvailableStock() < quantity){
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT , "Insufficient Stock"
+            );
+        }
+
+        product.setAvailableStock(product.getAvailableStock() - quantity);
+        productRepository.save(product);
     }
 }

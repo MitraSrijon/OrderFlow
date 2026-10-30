@@ -46,7 +46,7 @@ class ProductServiceImplTest {
 
     @Test
     void deductStock_shouldReduceAvailableStock() {
-        when(productRepository.findById(1L))
+        when(productRepository.findByIdWithLock(1L))
                 .thenReturn(Optional.of(product));
 
         productService.deductStock(1L, 3);
@@ -57,7 +57,7 @@ class ProductServiceImplTest {
 
     @Test
     void deductStock_shouldAllowStockToBecomeZero() {
-        when(productRepository.findById(1L))
+        when(productRepository.findByIdWithLock(1L))
                 .thenReturn(Optional.of(product));
 
         productService.deductStock(1L, 10);
@@ -68,7 +68,7 @@ class ProductServiceImplTest {
 
     @Test
     void deductStock_shouldRejectInsufficientStock() {
-        when(productRepository.findById(1L))
+        when(productRepository.findByIdWithLock(1L))
                 .thenReturn(Optional.of(product));
 
         assertThrows(ResponseStatusException.class,
@@ -86,13 +86,13 @@ class ProductServiceImplTest {
         assertThrows(ResponseStatusException.class,
                 () -> productService.deductStock(1L, -1));
 
-        verify(productRepository, never()).findById(anyLong());
+        verify(productRepository, never()).findByIdWithLock(anyLong());
         verify(productRepository, never()).save(any(Product.class));
     }
 
     @Test
     void deductStock_shouldRejectMissingProduct() {
-        when(productRepository.findById(99L))
+        when(productRepository.findByIdWithLock(99L))
                 .thenReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class,

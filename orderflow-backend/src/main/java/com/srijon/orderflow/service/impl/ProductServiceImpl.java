@@ -12,6 +12,7 @@ import com.srijon.orderflow.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -116,6 +117,7 @@ public class ProductServiceImpl implements ProductService {
         return mapper.toResponseDto(productRepository.save(product));
     }
 
+    @Transactional
     @Override
     public void deductStock(Long productId, Integer quantity) {
 
@@ -125,7 +127,7 @@ public class ProductServiceImpl implements ProductService {
             );
         }
 
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findByIdWithLock(productId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,  "Product does not exist"
                 ));

@@ -141,4 +141,25 @@ public class ProductServiceImpl implements ProductService {
         product.setAvailableStock(product.getAvailableStock() - quantity);
         productRepository.save(product);
     }
+
+    @Transactional
+    @Override
+    public void restoreStock(Long productId, Integer quantity) {
+
+        if(quantity == null ||  quantity <= 0){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Restored quantity must be greater than zero"
+            );
+        }
+
+        Product product = productRepository.findByIdWithLock(productId)
+                .orElseThrow( () -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Product does not exist"
+                ));
+
+        product.setAvailableStock(product.getAvailableStock() + quantity);
+        productRepository.save(product);
+    }
 }

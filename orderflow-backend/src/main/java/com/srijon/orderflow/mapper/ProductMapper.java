@@ -1,7 +1,7 @@
 package com.srijon.orderflow.mapper;
 
-import com.srijon.orderflow.dto.ProductRequestDto;
-import com.srijon.orderflow.dto.ProductResponseDto;
+import com.srijon.orderflow.dto.ProductDto.ProductRequestDto;
+import com.srijon.orderflow.dto.ProductDto.ProductResponseDto;
 import com.srijon.orderflow.entity.Product;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +31,8 @@ public class ProductMapper {
         productResponseDto.setDescription(product.getDescription());
         productResponseDto.setPrice(product.getPrice());
         productResponseDto.setAvailableStock(product.getAvailableStock());
+        productResponseDto.setCategoryId(product.getCategory().getId());
+        productResponseDto.setCategoryName(product.getCategory().getName());
         productResponseDto.setCreated(product.getCreated());
         productResponseDto.setUpdated(product.getUpdated());
 

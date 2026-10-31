@@ -1,12 +1,10 @@
 package com.srijon.orderflow.service;
 
-import com.srijon.orderflow.dto.ProductRequestDto;
-import com.srijon.orderflow.dto.ProductResponseDto;
+import com.srijon.orderflow.dto.ProductDto.ProductRequestDto;
+import com.srijon.orderflow.dto.ProductDto.ProductResponseDto;
+import com.srijon.orderflow.dto.ProductDto.StockUpdateRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-
-import java.util.List;
 
 //Basic structure of Product Service
 public interface ProductService {
@@ -29,4 +27,13 @@ public interface ProductService {
     //Search a product
     Page<ProductResponseDto> searchProducts(
             String name, Pageable pageable);
+
+    //Search products by category
+    Page<ProductResponseDto> getProductsByCategory(Long categoryId ,  Pageable pageable);
+
+    //Update the stock quantity
+    ProductResponseDto updateStock(Long id , StockUpdateRequestDto stockUpdateRequestDto);
+
+    //Reducing the stock when an order is placed
+    void deductStock(Long productId, Integer quantity);
 }

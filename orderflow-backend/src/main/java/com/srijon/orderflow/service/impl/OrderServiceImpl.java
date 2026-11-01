@@ -47,7 +47,16 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toMap(
                         OrderItemRequestDto::getProductId,
                         OrderItemRequestDto::getQuantity,
-                        Integer::sum
+                        (a, b) -> {
+                            try {
+                                return Math.addExact(a, b);
+                            } catch (ArithmeticException ex) {
+                                throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Combined product quantity exceeds the supported limit"
+                                );
+                            }
+                        }
                 ));
 
         Order order = new Order();
@@ -108,7 +117,7 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toOrderResponseDto(order);
     }
 
-
+    @Transactional
     @Override
     public OrderResponseDto updateOrderStatus(Long orderId, OrderStatus status) {
 
@@ -135,7 +144,7 @@ public class OrderServiceImpl implements OrderService {
         if(status == OrderStatus.CANCELLED){
 
             for(OrderItem item : order.getOrderItems()){
-                productService.deductStock(
+                productService.restoreStock(
                         item.getProduct().getId(),
                         item.getQuantity()
                 );
@@ -193,4 +202,6 @@ public class OrderServiceImpl implements OrderService {
                 .findByCreatedAtBetween(startDate, endDate, pageable)
                 .map(orderMapper::toOrderResponseDto);
     }
+
+
 }

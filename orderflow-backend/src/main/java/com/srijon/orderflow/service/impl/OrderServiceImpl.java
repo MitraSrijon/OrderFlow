@@ -13,12 +13,15 @@ import com.srijon.orderflow.repository.ProductRepository;
 import com.srijon.orderflow.service.OrderService;
 import com.srijon.orderflow.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -115,10 +118,17 @@ public class OrderServiceImpl implements OrderService {
                         "Order not found"
                 ));
 
-        if(order.getOrderStatus() == OrderStatus.CANCELLED){
+        OrderStatus currentStatus = order.getOrderStatus();
+
+        boolean validTransition = (currentStatus == OrderStatus.PENDING &&
+                (status == OrderStatus.CONFIRMED || status == OrderStatus.CANCELLED)
+                || (currentStatus == OrderStatus.CONFIRMED &&  status == OrderStatus.CANCELLED));
+
+        if(!validTransition){
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Cancelled orders cant be updated"
+                    "Invalid order status transition: "
+                            + currentStatus + " -> " + status
             );
         }
 
@@ -137,5 +147,50 @@ public class OrderServiceImpl implements OrderService {
         Order updatedOrder = orderRepository.save(order);
 
         return orderMapper.toOrderResponseDto(updatedOrder);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<OrderResponseDto> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(orderMapper::toOrderResponseDto);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<OrderResponseDto> getOrdersByStatus(
+            OrderStatus status, Pageable pageable) {
+
+        return orderRepository.findByOrderStatus(status, pageable)
+                .map(orderMapper::toOrderResponseDto);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<OrderResponseDto> getOrdersByCustomerEmail(
+            String email, Pageable pageable) {
+
+        return orderRepository
+                .findByCustomerEmailIgnoreCase(email, pageable)
+                .map(orderMapper::toOrderResponseDto);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<OrderResponseDto> getOrdersByDateRange(
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Pageable pageable) {
+
+        if (startDate.isAfter(endDate)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Start date cannot be after end date"
+            );
+        }
+
+        return orderRepository
+                .findByCreatedAtBetween(startDate, endDate, pageable)
+                .map(orderMapper::toOrderResponseDto);
     }
 }

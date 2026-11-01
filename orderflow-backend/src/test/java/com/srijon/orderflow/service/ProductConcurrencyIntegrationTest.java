@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 import java.math.BigDecimal;
@@ -43,12 +44,12 @@ public class ProductConcurrencyIntegrationTest {
     }
 
     //Creating a test product
-    private Product createTestProduct() {
+    private Product createTestProduct(int stock) {
         Product product = new Product();
-        product.setName("Concurrency Test Product");
+        product.setName("Concurrency Test Product " + UUID.randomUUID());
         product.setDescription("Testing stock locking");
         product.setPrice(new BigDecimal("100.00"));
-        product.setAvailableStock(5);
+        product.setAvailableStock(stock);
         product.setCategory(createTestCategory());
 
         return productRepository.save(product);
@@ -75,7 +76,7 @@ public class ProductConcurrencyIntegrationTest {
     @Test
     void shouldPreventOversellingWhenTwoRequestsArriveTogether() throws Exception {
 
-        Product product = createTestProduct();
+        Product product = createTestProduct(5);
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
@@ -125,7 +126,7 @@ public class ProductConcurrencyIntegrationTest {
     @Test
     void shouldAllowBothRequestsWhenStockIsSufficient() throws Exception {
 
-        Product product = createTestProduct();
+        Product product = createTestProduct(10);
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
@@ -173,7 +174,7 @@ public class ProductConcurrencyIntegrationTest {
     @Test
     void shouldRejectBothRequestsWhenStockIsInsufficient() throws Exception {
 
-        Product product = createTestProduct();
+        Product product = createTestProduct(5);
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
@@ -221,7 +222,7 @@ public class ProductConcurrencyIntegrationTest {
     @Test
     void shouldHandleMultipleConcurrentStockDeductions() throws Exception {
 
-        Product product = createTestProduct();
+        Product product = createTestProduct(100);
 
         int noOfRequest = 20;
 
@@ -271,7 +272,7 @@ public class ProductConcurrencyIntegrationTest {
     @Test
     void shouldRejectExcessConcurrentStockRequests() throws Exception {
 
-        Product product = createTestProduct();
+        Product product = createTestProduct(50);
 
         int noOfRequest = 20;
 

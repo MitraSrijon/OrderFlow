@@ -36,4 +36,7 @@ public interface ProductService {
 
     //Reducing the stock when an order is placed
     void deductStock(Long productId, Integer quantity);
+
+    //Restoring the stock in case the order is cancelled
+    void restoreStock(Long productId, Integer quantity);
 }

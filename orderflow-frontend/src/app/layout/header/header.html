@@ -1,0 +1,53 @@
+<header class="topbar">
+  <div class="header-left">
+    <button class="icon-button mobile-menu" aria-label="Open navigation">
+      <lucide-icon [img]="icons.Menu" [size]="20"></lucide-icon>
+    </button>
+
+    <div class="breadcrumb">
+      <span class="breadcrumb-muted">Workspace</span>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current">Overview</span>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <label class="country-selector">
+      <lucide-icon [img]="icons.Globe" [size]="17"></lucide-icon>
+
+      <select
+        [value]="preferencesService.selectedCountry().countryCode"
+        (change)="onCountryChange($event)"
+        aria-label="Select country and currency"
+      >
+        @for (country of countries; track country.countryCode) {
+          <option [value]="country.countryCode">
+            {{ country.country }} ({{ country.currency }})
+          </option>
+        }
+      </select>
+    </label>
+
+    <button
+      class="icon-button theme-toggle"
+      (click)="themeService.toggleTheme()"
+      [attr.aria-label]="
+        themeService.theme() === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
+      "
+    >
+      @if (themeService.theme() === 'light') {
+        <lucide-icon [img]="icons.Moon" [size]="19"></lucide-icon>
+      } @else {
+        <lucide-icon [img]="icons.Sun" [size]="19"></lucide-icon>
+      }
+    </button>
+
+    <div class="profile">
+      <div class="avatar">AD</div>
+      <div class="profile-info">
+        <span class="profile-name">Admin User</span>
+        <span class="profile-role">Administrator</span>
+      </div>
+    </div>
+  </div>
+</header>

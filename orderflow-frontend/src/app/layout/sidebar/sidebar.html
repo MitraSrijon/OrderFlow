@@ -1,0 +1,44 @@
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">O</div>
+    <span>OrderFlow</span>
+  </div>
+
+  <div class="nav-section">
+    <span class="section-label">WORKSPACE</span>
+
+    <a
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-link"
+    ></a>
+
+    <a routerLink="/products" routerLinkActive="active" class="nav-link">
+      <i-lucide [img]="icons.Package" [size]="19"></i-lucide>
+      <span>Products</span>
+    </a>
+
+    <a routerLink="/categories" routerLinkActive="active" class="nav-link">
+      <i-lucide [img]="icons.Tags" [size]="19"></i-lucide>
+      <span>Categories</span>
+    </a>
+
+    <a routerLink="/orders" routerLinkActive="active" class="nav-link">
+      <i-lucide [img]="icons.ShoppingCart" [size]="19"></i-lucide>
+      <span>Orders</span>
+    </a>
+
+    <a routerLink="/inventory" routerLinkActive="active" class="nav-link">
+      <i-lucide [img]="icons.ClipboardList" [size]="19"></i-lucide>
+      <span>Inventory</span>
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <a routerLink="/settings" routerLinkActive="active" class="nav-link">
+      <i-lucide [img]="icons.Settings" [size]="19"></i-lucide>
+      <span>Settings</span>
+    </a>
+  </div>
+</aside>

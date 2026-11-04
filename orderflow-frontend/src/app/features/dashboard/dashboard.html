@@ -1,0 +1,193 @@
+<div class="dashboard">
+  <div class="page-heading">
+    <div>
+      <h1>Dashboard Overview</h1>
+      <p>Welcome back! Here's what's happening with your store.</p>
+    </div>
+
+    <button class="date-button">
+      <lucide-icon [img]="icons.Clock" [size]="16"></lucide-icon>
+      Last 30 days
+    </button>
+  </div>
+
+  <section class="stats-grid">
+    @for (stat of stats; track stat.label) {
+      <article class="stat-card">
+        <div class="stat-top">
+          <span>{{ stat.label }}</span>
+
+          <div class="stat-icon" [class]="stat.icon">
+            @if (stat.icon === 'revenue') {
+              <lucide-icon [img]="icons.IndianRupee" [size]="20"></lucide-icon>
+            } @else if (stat.icon === 'orders') {
+              <lucide-icon [img]="icons.ShoppingBag" [size]="20"></lucide-icon>
+            } @else if (stat.icon === 'products') {
+              <lucide-icon [img]="icons.Package" [size]="20"></lucide-icon>
+            } @else {
+              <lucide-icon [img]="icons.Users" [size]="20"></lucide-icon>
+            }
+          </div>
+        </div>
+
+        <h2>
+          @if (stat.icon === 'revenue') {
+            {{ formatCurrency(stat.value) }}
+          } @else {
+            {{ stat.value.toLocaleString() }}
+          }
+        </h2>
+
+        <div class="stat-change">
+          <span [class.negative]="!stat.positive">
+            @if (stat.positive) {
+              <lucide-icon [img]="icons.ArrowUpRight" [size]="15"></lucide-icon>
+            } @else {
+              <lucide-icon [img]="icons.ArrowDownRight" [size]="15"></lucide-icon>
+            }
+            {{ stat.change }}
+          </span>
+          <small>{{ stat.detail }}</small>
+        </div>
+      </article>
+    }
+  </section>
+
+  <section class="dashboard-grid">
+    <article class="panel chart-panel">
+      <div class="panel-heading">
+        <div>
+          <h3>Revenue Overview</h3>
+          <p>Monthly revenue performance</p>
+        </div>
+        <span class="panel-period">This year</span>
+      </div>
+
+      <div class="chart-placeholder">
+        <div class="chart-y-labels">
+          <span>₹1.5L</span>
+          <span>₹1L</span>
+          <span>₹50K</span>
+          <span>₹0</span>
+        </div>
+
+        <div class="chart-area">
+          <div class="chart-grid-lines"><span></span><span></span><span></span><span></span></div>
+
+          <svg viewBox="0 0 700 220" preserveAspectRatio="none" class="revenue-chart">
+            <defs>
+              <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3b82f6" stop-opacity=".25" />
+                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M0 170 C50 155 65 120 115 135 S190 160 230 110 S300 90 350 115 S420 45 465 70 S530 95 580 40 S650 55 700 15 L700 220 L0 220 Z"
+              fill="url(#revenueFill)"
+            />
+            <path
+              d="M0 170 C50 155 65 120 115 135 S190 160 230 110 S300 90 350 115 S420 45 465 70 S530 95 580 40 S650 55 700 15"
+              fill="none"
+              stroke="#3b82f6"
+              stroke-width="3"
+              vector-effect="non-scaling-stroke"
+            />
+          </svg>
+
+          <div class="chart-months">
+            <span>Jan</span><span>Feb</span><span>Mar</span> <span>Apr</span><span>May</span
+            ><span>Jun</span> <span>Jul</span><span>Aug</span><span>Sep</span> <span>Oct</span
+            ><span>Nov</span><span>Dec</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel stock-panel">
+      <div class="panel-heading">
+        <div>
+          <h3>Stock Alerts</h3>
+          <p>Products that need attention</p>
+        </div>
+        <span class="alert-count">3 Alerts</span>
+      </div>
+
+      <div class="stock-alert">
+        <div class="stock-alert-icon">
+          <lucide-icon [img]="icons.AlertTriangle" [size]="18"></lucide-icon>
+        </div>
+        <div>
+          <strong>Smart Watch Pro</strong>
+          <small>Only 8 units remaining</small>
+        </div>
+        <span class="stock-number">8</span>
+      </div>
+
+      <div class="stock-alert">
+        <div class="stock-alert-icon">
+          <lucide-icon [img]="icons.AlertTriangle" [size]="18"></lucide-icon>
+        </div>
+        <div>
+          <strong>Running Shoes</strong>
+          <small>Only 5 units remaining</small>
+        </div>
+        <span class="stock-number">5</span>
+      </div>
+
+      <div class="stock-alert">
+        <div class="stock-alert-icon">
+          <lucide-icon [img]="icons.AlertTriangle" [size]="18"></lucide-icon>
+        </div>
+        <div>
+          <strong>Wireless Headphones</strong>
+          <small>Only 12 units remaining</small>
+        </div>
+        <span class="stock-number">12</span>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel orders-panel">
+    <div class="panel-heading">
+      <div>
+        <h3>Recent Orders</h3>
+        <p>A quick look at your latest transactions</p>
+      </div>
+      <a routerLink="/orders" class="view-all">View all orders →</a>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of recentOrders; track order.id) {
+            <tr>
+              <td class="order-id">{{ order.id }}</td>
+              <td>
+                <div class="customer-cell">
+                  <strong>{{ order.customer }}</strong>
+                  <small>{{ order.email }}</small>
+                </div>
+              </td>
+              <td>{{ order.date }}</td>
+              <td class="amount">{{ formatCurrency(order.amount) }}</td>
+              <td>
+                <span class="status" [class]="order.status.toLowerCase()">
+                  {{ order.status }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

@@ -1,1 +1,84 @@
-<p>products works!</p>
+<div class="products-page">
+  <div class="page-heading">
+    <div>
+      <h1>Products</h1>
+      <p>Manage your product catalogue and stock levels.</p>
+    </div>
+
+    <button class="refresh-button" (click)="loadProducts()" [disabled]="loading">↻ Refresh</button>
+  </div>
+
+  <div class="products-toolbar">
+    <div class="search-box">
+      <span>⌕</span>
+      <input type="text" placeholder="Search products by name..." (input)="onSearch($event)" />
+    </div>
+
+    <span class="product-count"> {{ filteredProducts.length }} products </span>
+  </div>
+
+  @if (loading) {
+    <div class="state-message">Loading products...</div>
+  } @else if (errorMessage) {
+    <div class="state-message error">
+      <p>{{ errorMessage }}</p>
+      <button class="refresh-button" (click)="loadProducts()">Try again</button>
+    </div>
+  } @else if (filteredProducts.length === 0) {
+    <div class="state-message">
+      @if (searchTerm) {
+        No products match "{{ searchTerm }}".
+      } @else {
+        No products found. Your catalogue is empty.
+      }
+    </div>
+  } @else {
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Available Stock</th>
+            <th>Stock Status</th>
+            <th>Last Updated</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (product of filteredProducts; track product.id) {
+            <tr>
+              <td>
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-description">
+                  {{ product.description || 'No description' }}
+                </div>
+              </td>
+
+              <td class="price">
+                {{ formatPrice(product.price) }}
+              </td>
+
+              <td>{{ product.availableStock }}</td>
+
+              <td>
+                <span
+                  class="stock-badge"
+                  [class.in-stock]="product.availableStock > 5"
+                  [class.low-stock]="product.availableStock > 0 && product.availableStock <= 5"
+                  [class.out-of-stock]="product.availableStock === 0"
+                >
+                  {{ getStockStatus(product.availableStock) }}
+                </span>
+              </td>
+
+              <td>
+                {{ product.updated ? (product.updated | date: 'mediumDate') : '—' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

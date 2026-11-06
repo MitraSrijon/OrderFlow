@@ -11,10 +11,15 @@ export interface Product {
 }
 
 export interface ProductRequest {
+  categoryId: number;
   name: string;
   description: string;
   price: number;
   availableStock: number;
+}
+
+export interface StockUpdateRequest {
+  quantity: number;
 }
 
 export interface ProductPage {
@@ -25,4 +30,6 @@ export interface ProductPage {
   number: number;
   first: boolean;
   last: boolean;
+  numberOfElements: number;
+  empty: boolean;
 }

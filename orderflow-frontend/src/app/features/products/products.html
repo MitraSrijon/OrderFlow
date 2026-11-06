@@ -5,29 +5,303 @@
       <p>Manage your product catalogue and stock levels.</p>
     </div>
 
-    <button class="refresh-button" (click)="loadProducts()" [disabled]="loading">↻ Refresh</button>
+    <div class="heading-actions">
+      <button class="add-button" (click)="toggleAddForm()" [class.cancel-button]="showAddForm">
+        {{ showAddForm ? '✕ Cancel' : '+ Add Product' }}
+      </button>
+
+      <button class="refresh-button" (click)="loadProducts()" [disabled]="loading">
+        ↻ Refresh
+      </button>
+    </div>
   </div>
 
+  @if (successMessage) {
+    <div class="success-message">
+      {{ successMessage }}
+    </div>
+  }
+
+  @if (errorMessage && !loading) {
+    <div class="error-message">
+      {{ errorMessage }}
+    </div>
+  }
+
+  @if (showAddForm) {
+    <div class="form-container">
+      <div class="form-heading">
+        <h2>
+          {{ editingProductId !== null ? 'Edit Product' : 'Add New Product' }}
+        </h2>
+
+        <p>
+          {{
+            editingProductId !== null
+              ? 'Update the product details below.'
+              : 'Enter the product details below.'
+          }}
+        </p>
+      </div>
+
+      <form #productForm="ngForm" (ngSubmit)="saveProduct(productForm)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">Product Name *</label>
+
+            <input
+              id="name"
+              type="text"
+              name="name"
+              [(ngModel)]="newProduct.name"
+              #name="ngModel"
+              required
+              minlength="2"
+              maxlength="150"
+              placeholder="Enter product name"
+            />
+
+            @if (name.invalid && name.touched) {
+              <small class="field-error"> Product name must contain at least 2 characters. </small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="category">Category *</label>
+
+            <select
+              id="category"
+              name="categoryId"
+              [(ngModel)]="newProduct.categoryId"
+              #categoryId="ngModel"
+              required
+            >
+              <option [ngValue]="0" disabled>Select a category</option>
+
+              @for (category of categories; track category.id) {
+                <option [ngValue]="category.id">
+                  {{ category.name }}
+                </option>
+              }
+            </select>
+
+            @if (categoryId.touched && newProduct.categoryId <= 0) {
+              <small class="field-error"> Please select a category. </small>
+            }
+
+            @if (loadingCategories) {
+              <small class="helper-text">Loading categories...</small>
+            }
+
+            @if (categoryError) {
+              <small class="field-error">{{ categoryError }}</small>
+
+              <button type="button" class="retry-button" (click)="loadCategories()">
+                Retry loading categories
+              </button>
+            }
+
+            @if (!loadingCategories && !categoryError && categories.length === 0) {
+              <small class="field-error"> No categories available. Create a category first. </small>
+            }
+          </div>
+
+          <div class="form-group full-width">
+            <label for="description">Description</label>
+
+            <textarea
+              id="description"
+              name="description"
+              [(ngModel)]="newProduct.description"
+              rows="3"
+              maxlength="500"
+              placeholder="Enter product description"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="price">Price ({{ currencyCode }}) *</label>
+
+            <input
+              id="price"
+              type="number"
+              name="price"
+              [(ngModel)]="newProduct.price"
+              #price="ngModel"
+              required
+              min="0.01"
+              step="0.01"
+              placeholder="Enter price"
+            />
+
+            @if (price.invalid && price.touched) {
+              <small class="field-error"> Price must be greater than zero. </small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="availableStock">Available Stock *</label>
+
+            <input
+              id="availableStock"
+              type="number"
+              name="availableStock"
+              [(ngModel)]="newProduct.availableStock"
+              #availableStock="ngModel"
+              required
+              min="0"
+              step="1"
+              placeholder="Enter stock quantity"
+            />
+
+            @if (availableStock.invalid && availableStock.touched) {
+              <small class="field-error"> Stock must be a non-negative whole number. </small>
+            }
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="refresh-button" (click)="cancelForm()" [disabled]="saving">
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="add-button"
+            [disabled]="
+              saving ||
+              loadingCategories ||
+              categories.length === 0 ||
+              productForm.invalid ||
+              newProduct.categoryId <= 0
+            "
+          >
+            {{
+              saving
+                ? editingProductId !== null
+                  ? 'Updating...'
+                  : 'Creating...'
+                : editingProductId !== null
+                  ? 'Update Product'
+                  : 'Create Product'
+            }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Filters -->
   <div class="products-toolbar">
-    <div class="search-box">
-      <span>⌕</span>
-      <input type="text" placeholder="Search products by name..." (input)="onSearch($event)" />
+    <div class="filter-group">
+      <div class="search-box">
+        <span>⌕</span>
+
+        <input
+          type="text"
+          name="search"
+          [(ngModel)]="searchTerm"
+          placeholder="Search products by name..."
+          (keyup.enter)="onSearch()"
+        />
+
+        @if (searchTerm) {
+          <button
+            type="button"
+            class="clear-search"
+            (click)="clearSearch()"
+            aria-label="Clear search"
+          >
+            ✕
+          </button>
+        }
+
+        <button type="button" class="search-button" (click)="onSearch()" [disabled]="loading">
+          Search
+        </button>
+      </div>
+
+      <select
+        class="filter-select"
+        [(ngModel)]="selectedCategoryId"
+        name="categoryFilter"
+        (ngModelChange)="onCategoryFilterChange()"
+      >
+        <option [ngValue]="0">All Categories</option>
+
+        @for (category of categories; track category.id) {
+          <option [ngValue]="category.id">
+            {{ category.name }}
+          </option>
+        }
+      </select>
+
+      <button
+        type="button"
+        class="refresh-button"
+        (click)="clearFilters()"
+        [disabled]="loading || (!searchTerm && selectedCategoryId === 0)"
+      >
+        Clear Filters
+      </button>
     </div>
 
-    <span class="product-count"> {{ filteredProducts.length }} products </span>
+    <span class="product-count"> {{ totalElements }} products </span>
   </div>
 
+  <!-- Sorting and page size -->
+  <div class="table-controls">
+    <div class="sort-controls">
+      <label for="sortBy">Sort by</label>
+
+      <select id="sortBy" [(ngModel)]="sortBy" name="sortBy" (ngModelChange)="onSortChange()">
+        <option value="id">Product ID</option>
+        <option value="name">Name</option>
+        <option value="price">Price</option>
+        <option value="availableStock">Available Stock</option>
+        <option value="created">Date Created</option>
+        <option value="updated">Last Updated</option>
+      </select>
+
+      <button
+        type="button"
+        class="refresh-button sort-direction"
+        (click)="toggleSortDirection()"
+        [disabled]="loading"
+      >
+        {{ sortDirection === 'asc' ? '↑ Ascending' : '↓ Descending' }}
+      </button>
+    </div>
+
+    <div class="page-size-control">
+      <label for="pageSize">Rows per page</label>
+
+      <select
+        id="pageSize"
+        [(ngModel)]="pageSize"
+        name="pageSize"
+        (ngModelChange)="onPageSizeChange()"
+      >
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="20">20</option>
+        <option [ngValue]="50">50</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Product table -->
   @if (loading) {
     <div class="state-message">Loading products...</div>
   } @else if (errorMessage) {
     <div class="state-message error">
       <p>{{ errorMessage }}</p>
+
       <button class="refresh-button" (click)="loadProducts()">Try again</button>
     </div>
-  } @else if (filteredProducts.length === 0) {
+  } @else if (products.length === 0) {
     <div class="state-message">
-      @if (searchTerm) {
-        No products match "{{ searchTerm }}".
+      @if (searchTerm || selectedCategoryId > 0) {
+        No products match your filters.
       } @else {
         No products found. Your catalogue is empty.
       }
@@ -38,28 +312,77 @@
         <thead>
           <tr>
             <th>Product</th>
+            <th>Category</th>
             <th>Price</th>
             <th>Available Stock</th>
             <th>Stock Status</th>
             <th>Last Updated</th>
+            <th>Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          @for (product of filteredProducts; track product.id) {
+          @for (product of products; track product.id) {
             <tr>
               <td>
                 <div class="product-name">{{ product.name }}</div>
+
                 <div class="product-description">
                   {{ product.description || 'No description' }}
                 </div>
               </td>
 
+              <td>{{ product.categoryName }}</td>
+
               <td class="price">
                 {{ formatPrice(product.price) }}
               </td>
 
-              <td>{{ product.availableStock }}</td>
+              <td>
+                @if (editingStockProductId === product.id) {
+                  <div class="stock-editor">
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      [(ngModel)]="stockQuantity"
+                      [ngModelOptions]="{ standalone: true }"
+                      aria-label="New stock quantity"
+                    />
+
+                    <button
+                      type="button"
+                      class="stock-save-button"
+                      (click)="saveStock(product)"
+                      [disabled]="updatingStock"
+                    >
+                      {{ updatingStock ? 'Saving...' : 'Save' }}
+                    </button>
+
+                    <button
+                      type="button"
+                      class="stock-cancel-button"
+                      (click)="cancelStockEdit()"
+                      [disabled]="updatingStock"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                } @else {
+                  <div class="stock-value">
+                    {{ product.availableStock }}
+
+                    <button
+                      type="button"
+                      class="stock-edit-button"
+                      (click)="startStockEdit(product)"
+                      [disabled]="updatingStock || deletingProductId !== null"
+                    >
+                      Update
+                    </button>
+                  </div>
+                }
+              </td>
 
               <td>
                 <span
@@ -75,10 +398,71 @@
               <td>
                 {{ product.updated ? (product.updated | date: 'mediumDate') : '—' }}
               </td>
+
+              <td>
+                <div class="action-buttons">
+                  <button
+                    class="edit-button"
+                    (click)="editProduct(product)"
+                    [disabled]="saving || deletingProductId !== null || updatingStock"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    class="delete-button"
+                    (click)="deleteProduct(product)"
+                    [disabled]="saving || deletingProductId !== null || updatingStock"
+                  >
+                    {{ deletingProductId === product.id ? 'Deleting...' : 'Delete' }}
+                  </button>
+                </div>
+              </td>
             </tr>
           }
         </tbody>
       </table>
+    </div>
+  }
+
+  <!-- Pagination -->
+  @if (!loading && totalElements > 0) {
+    <div class="pagination">
+      <div class="pagination-info">
+        Showing {{ startItem }}–{{ endItem }} of {{ totalElements }} products
+      </div>
+
+      <div class="pagination-actions">
+        <button
+          type="button"
+          class="page-button"
+          (click)="previousPage()"
+          [disabled]="currentPage === 0 || loading"
+        >
+          Previous
+        </button>
+
+        @for (page of pageNumbers; track page) {
+          <button
+            type="button"
+            class="page-number"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)"
+            [disabled]="loading"
+          >
+            {{ page + 1 }}
+          </button>
+        }
+
+        <button
+          type="button"
+          class="page-button"
+          (click)="nextPage()"
+          [disabled]="currentPage >= totalPages - 1 || loading"
+        >
+          Next
+        </button>
+      </div>
     </div>
   }
 </div>

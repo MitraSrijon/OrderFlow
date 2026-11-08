@@ -6,6 +6,11 @@ export interface Category {
   updated: string;
 }
 
+export interface CategoryRequest {
+  name: string;
+  description: string | null;
+}
+
 export interface CategoryPage {
   content: Category[];
   totalElements: number;

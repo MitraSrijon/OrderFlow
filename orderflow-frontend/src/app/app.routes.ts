@@ -26,4 +26,8 @@ export const routes: Routes = [
     ],
   },
   { path: '**', redirectTo: '' },
+  {
+    path: 'categories',
+    loadComponent: () => import('./features/categories/categories').then((m) => m.Categories),
+  },
 ];

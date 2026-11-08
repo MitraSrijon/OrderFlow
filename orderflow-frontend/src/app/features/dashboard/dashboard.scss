@@ -5,8 +5,7 @@
 
 .page-heading,
 .panel-heading,
-.stat-top,
-.stat-change {
+.stat-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -14,6 +13,7 @@
 
 .page-heading {
   margin-bottom: 28px;
+  gap: 16px;
 
   h1 {
     margin: 0;
@@ -41,6 +41,55 @@
   font-size: 12px;
 }
 
+.date-button {
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.dashboard-error {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 8px;
+  font-size: 13px;
+
+  button {
+    padding: 6px 12px;
+    color: #b42318;
+    background: transparent;
+    border: 1px solid #fecdca;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+}
+
+.dashboard-loading,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 140px;
+  color: var(--color-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -50,6 +99,7 @@
 
 .stat-card,
 .panel {
+  min-width: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 12px;
@@ -65,58 +115,44 @@
   }
 
   h2 {
-    margin: 19px 0 12px;
+    margin: 19px 0 10px;
     font-size: 25px;
     letter-spacing: -0.7px;
+    overflow-wrap: anywhere;
   }
 }
 
 .stat-icon {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
   display: grid;
   place-items: center;
+  border-radius: 10px;
 
   &.revenue {
     background: #dbeafe;
     color: #2563eb;
   }
+
   &.orders {
     background: #ede9fe;
     color: #7c3aed;
   }
+
   &.products {
     background: #dcfce7;
     color: #16a34a;
   }
+
   &.customers {
     background: #ffedd5;
     color: #ea580c;
   }
 }
 
-.stat-change {
-  justify-content: flex-start;
-  gap: 8px;
-
-  > span {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    color: #16a34a;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  > span.negative {
-    color: #dc2626;
-  }
-
-  small {
-    color: var(--color-muted);
-    font-size: 11px;
-  }
+.stat-detail {
+  color: var(--color-muted);
+  font-size: 11px;
 }
 
 .dashboard-grid {
@@ -128,11 +164,11 @@
 
 .panel {
   padding: 22px;
-  min-width: 0;
 }
 
 .panel-heading {
   margin-bottom: 22px;
+  gap: 12px;
 
   h3 {
     margin: 0;
@@ -160,11 +196,12 @@
   padding-bottom: 25px;
   color: var(--color-muted);
   font-size: 10px;
+  white-space: nowrap;
 }
 
 .chart-area {
-  flex: 1;
   position: relative;
+  flex: 1;
   min-width: 0;
 }
 
@@ -190,22 +227,28 @@
 
 .chart-months {
   position: absolute;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
   display: flex;
   justify-content: space-between;
   color: var(--color-muted);
   font-size: 10px;
+
+  span {
+    flex: 1;
+    text-align: center;
+  }
 }
 
 .alert-count {
   padding: 5px 9px;
-  background: #fef2f2;
   color: #dc2626;
+  background: #fef2f2;
   border-radius: 20px;
   font-size: 10px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .stock-alert {
@@ -215,7 +258,7 @@
   padding: 13px 0;
   border-bottom: 1px solid var(--color-border);
 
-  &:last-child {
+  &:last-of-type {
     border-bottom: 0;
   }
 
@@ -225,34 +268,51 @@
   }
 
   strong {
-    font-size: 12px;
     margin-bottom: 5px;
+    font-size: 12px;
   }
 
   small {
-    font-size: 11px;
     color: var(--color-muted);
+    font-size: 11px;
   }
+}
+
+.stock-product-info {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .stock-alert-icon {
   width: 34px;
   height: 34px;
+  flex-shrink: 0;
   display: grid;
   place-items: center;
   border-radius: 8px;
-  background: #fff7ed;
   color: #ea580c;
+  background: #fff7ed;
 }
 
 .stock-number {
   margin-left: auto;
+  color: #dc2626;
   font-size: 13px;
   font-weight: 700;
-  color: #dc2626;
 }
 
-.orders-panel {
+.stock-link {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.orders-panel,
+.top-products-panel {
+  margin-bottom: 22px;
   padding-bottom: 8px;
 }
 
@@ -260,6 +320,12 @@
   color: var(--color-primary);
   font-size: 12px;
   font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .table-wrapper {
@@ -274,8 +340,8 @@ table {
 
   th {
     padding: 12px 14px;
-    background: var(--color-background);
     color: var(--color-muted);
+    background: var(--color-background);
     text-align: left;
     font-size: 10px;
     font-weight: 600;
@@ -285,13 +351,17 @@ table {
 
   td {
     padding: 15px 14px;
-    border-bottom: 1px solid var(--color-border);
     color: var(--color-text);
+    border-bottom: 1px solid var(--color-border);
     font-size: 12px;
   }
 
   tbody tr:last-child td {
     border-bottom: 0;
+  }
+
+  tbody tr:hover {
+    background: color-mix(in srgb, var(--color-primary) 4%, transparent);
   }
 }
 
@@ -328,21 +398,34 @@ table {
   font-size: 10px;
   font-weight: 600;
 
-  &.delivered {
-    background: #dcfce7;
-    color: #15803d;
-  }
-  &.processing {
-    background: #dbeafe;
-    color: #1d4ed8;
-  }
-  &.shipped {
-    background: #ede9fe;
-    color: #6d28d9;
-  }
   &.pending {
-    background: #fef3c7;
     color: #b45309;
+    background: #fef3c7;
+  }
+
+  &.confirmed {
+    color: #15803d;
+    background: #dcfce7;
+  }
+
+  &.cancelled {
+    color: #b42318;
+    background: #fee4e2;
+  }
+}
+
+.product-name {
+  font-weight: 600;
+}
+
+.product-stock {
+  display: inline-block;
+  min-width: 28px;
+  text-align: center;
+  font-weight: 600;
+
+  &.low-stock {
+    color: #dc2626;
   }
 }
 
@@ -384,16 +467,20 @@ table {
     }
   }
 
-  .stat-change {
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
   .panel {
     padding: 16px;
   }
 
   .chart-placeholder {
     height: 190px;
+  }
+
+  .chart-y-labels,
+  .chart-months {
+    font-size: 9px;
+  }
+
+  .panel-heading {
+    align-items: flex-start;
   }
 }

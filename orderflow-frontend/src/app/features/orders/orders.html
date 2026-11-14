@@ -1,0 +1,368 @@
+<div class="orders-page">
+  <div class="page-header">
+    <div>
+      <h1>Order Management</h1>
+      <p>Manage customer orders, track statuses and create new orders.</p>
+    </div>
+
+    <button
+      class="primary-btn"
+      type="button"
+      (click)="openCreateForm()"
+      [disabled]="productsLoading"
+    >
+      <span>+</span> Create Order
+    </button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert error-alert">
+    {{ errorMessage }}
+    <button type="button" (click)="clearMessages()">×</button>
+  </div>
+
+  <div *ngIf="successMessage" class="alert success-alert">
+    {{ successMessage }}
+    <button type="button" (click)="clearMessages()">×</button>
+  </div>
+
+  <!-- Create Order -->
+  <section *ngIf="showCreateForm" class="panel create-panel">
+    <div class="section-header">
+      <div>
+        <h2>Create New Order</h2>
+        <p>Enter customer details and select products.</p>
+      </div>
+
+      <button type="button" class="icon-btn" aria-label="Close form" (click)="closeCreateForm()">
+        ×
+      </button>
+    </div>
+
+    <div *ngIf="productsLoading" class="loading">Loading products...</div>
+
+    <div *ngIf="!productsLoading && products.length === 0" class="empty-state">
+      No products available. Add products before creating an order.
+    </div>
+
+    <form *ngIf="!productsLoading && products.length > 0" (ngSubmit)="createOrder()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="customerName">Customer Name</label>
+          <input
+            id="customerName"
+            type="text"
+            name="customerName"
+            [(ngModel)]="customerName"
+            placeholder="Enter customer name"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="customerEmail">Customer Email</label>
+          <input
+            id="customerEmail"
+            type="email"
+            name="customerEmail"
+            [(ngModel)]="customerEmail"
+            placeholder="customer@example.com"
+            required
+            email
+          />
+        </div>
+      </div>
+
+      <div class="items-heading">
+        <h3>Order Items</h3>
+
+        <button type="button" class="secondary-btn" (click)="addItem()">+ Add Product</button>
+      </div>
+
+      <div class="order-item" *ngFor="let item of orderItems; let i = index">
+        <div class="form-group product-select">
+          <label [for]="'product-' + i">Product</label>
+
+          <select
+            [id]="'product-' + i"
+            [name]="'product-' + i"
+            [(ngModel)]="item.productId"
+            required
+          >
+            <option [ngValue]="null">Select a product</option>
+
+            <option
+              *ngFor="let product of products"
+              [ngValue]="product.id"
+              [disabled]="product.availableStock <= 0"
+            >
+              {{ product.name }} —
+              {{ product.price | currency: 'INR' : 'symbol' : '1.2-2' }}
+              (Stock: {{ product.availableStock }})
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group quantity-group">
+          <label [for]="'quantity-' + i">Quantity</label>
+          <input
+            [id]="'quantity-' + i"
+            [name]="'quantity-' + i"
+            type="number"
+            min="1"
+            step="1"
+            [(ngModel)]="item.quantity"
+            required
+          />
+        </div>
+
+        <div class="item-subtotal">
+          <label>Subtotal</label>
+          <strong>
+            {{ getItemSubtotal(item) | currency: 'INR' : 'symbol' : '1.2-2' }}
+          </strong>
+        </div>
+
+        <button
+          type="button"
+          class="remove-btn"
+          [disabled]="orderItems.length === 1"
+          (click)="removeItem(i)"
+          aria-label="Remove product"
+        >
+          ×
+        </button>
+
+        <p class="stock-warning" *ngIf="item.productId && isItemInvalid(item)">
+          Check the selected product and quantity. Available stock may be insufficient.
+        </p>
+      </div>
+
+      <div class="order-total">
+        <span>Estimated Total</span>
+        <strong>
+          {{ getEstimatedTotal() | currency: 'INR' : 'symbol' : '1.2-2' }}
+        </strong>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="secondary-btn" (click)="closeCreateForm()">Cancel</button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+          [disabled]="submitting || orderItems.some(isItemInvalid.bind(this))"
+        >
+          {{ submitting ? 'Creating...' : 'Place Order' }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Order Details -->
+  <section *ngIf="selectedOrder" class="panel details-panel">
+    <div class="section-header">
+      <div>
+        <h2>Order #{{ selectedOrder.id }}</h2>
+        <p>Order details and status management.</p>
+      </div>
+
+      <button type="button" class="icon-btn" aria-label="Close details" (click)="closeDetails()">
+        ×
+      </button>
+    </div>
+
+    <div class="customer-details">
+      <div>
+        <span>Customer</span>
+        <strong>{{ selectedOrder.customerName }}</strong>
+      </div>
+
+      <div>
+        <span>Email</span>
+        <strong>{{ selectedOrder.customerEmail }}</strong>
+      </div>
+
+      <div>
+        <span>Order Date</span>
+        <strong>{{ selectedOrder.createdAt | date: 'medium' }}</strong>
+      </div>
+
+      <div>
+        <span>Status</span>
+        <strong class="status-badge" [ngClass]="selectedOrder.orderStatus.toLowerCase()">
+          {{ selectedOrder.orderStatus }}
+        </strong>
+      </div>
+    </div>
+
+    <h3>Items</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Unit Price</th>
+            <th>Quantity</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let item of selectedOrder.items">
+            <td>{{ item.productName }}</td>
+            <td>{{ item.unitPrice | currency: 'INR' : 'symbol' : '1.2-2' }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.subtotal | currency: 'INR' : 'symbol' : '1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="details-footer">
+      <div class="details-total">
+        <span>Total Amount</span>
+        <strong>
+          {{ selectedOrder.totalAmount | currency: 'INR' : 'symbol' : '1.2-2' }}
+        </strong>
+      </div>
+
+      <div class="status-actions">
+        <button
+          *ngIf="canConfirm(selectedOrder)"
+          type="button"
+          class="confirm-btn"
+          (click)="updateStatus(selectedOrder, 'CONFIRMED')"
+        >
+          Confirm Order
+        </button>
+
+        <button
+          *ngIf="canCancel(selectedOrder)"
+          type="button"
+          class="cancel-btn"
+          (click)="updateStatus(selectedOrder, 'CANCELLED')"
+        >
+          Cancel Order
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="panel orders-panel">
+    <div class="section-header">
+      <div>
+        <h2>All Orders</h2>
+        <p>{{ totalElements }} order(s) found</p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="form-group status-filter">
+        <label for="statusFilter">Filter by Status</label>
+
+        <select
+          id="statusFilter"
+          name="statusFilter"
+          [(ngModel)]="statusFilter"
+          (ngModelChange)="onFilterChange()"
+        >
+          <option value="ALL">All Orders</option>
+          <option value="PENDING">Pending</option>
+          <option value="CONFIRMED">Confirmed</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="form-group email-filter">
+        <label for="emailFilter">Search by Customer Email</label>
+
+        <div class="search-control">
+          <input
+            id="emailFilter"
+            type="email"
+            name="emailFilter"
+            [(ngModel)]="emailFilter"
+            placeholder="Enter customer email"
+            (keyup.enter)="searchByEmail()"
+          />
+
+          <button type="button" class="primary-btn" (click)="searchByEmail()">Search</button>
+        </div>
+      </div>
+
+      <button type="button" class="text-btn clear-filter" (click)="clearFilters()">
+        Clear Filters
+      </button>
+    </div>
+
+    <!-- Orders Table -->
+    <div *ngIf="loading" class="loading">Loading orders...</div>
+
+    <div *ngIf="!loading && orders.length === 0" class="empty-state">No orders found.</div>
+
+    <div *ngIf="!loading && orders.length > 0" class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Items</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+            <th>Created At</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let order of orders">
+            <td class="order-id">#{{ order.id }}</td>
+            <td>{{ order.customerName }}</td>
+            <td>{{ order.customerEmail }}</td>
+            <td>{{ order.items.length }}</td>
+            <td class="amount">
+              {{ order.totalAmount | currency: 'INR' : 'symbol' : '1.2-2' }}
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="order.orderStatus.toLowerCase()">
+                {{ order.orderStatus }}
+              </span>
+            </td>
+            <td>{{ order.createdAt | date: 'mediumDate' }}</td>
+            <td>
+              <button type="button" class="view-btn" (click)="viewOrder(order)">View</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="!loading && totalPages > 1" class="pagination">
+      <span> Page {{ currentPage + 1 }} of {{ totalPages }} </span>
+
+      <div class="pagination-actions">
+        <button
+          type="button"
+          class="secondary-btn"
+          [disabled]="currentPage === 0"
+          (click)="changePage(currentPage - 1)"
+        >
+          Previous
+        </button>
+
+        <button
+          type="button"
+          class="secondary-btn"
+          [disabled]="currentPage >= totalPages - 1"
+          (click)="changePage(currentPage + 1)"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </section>
+</div>

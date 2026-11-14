@@ -1,0 +1,279 @@
+<div class="dashboard">
+  <!-- Page Header -->
+  <div class="page-heading">
+    <div>
+      <h1>Dashboard Overview</h1>
+      <p>Welcome back! Here's what's happening with your store.</p>
+    </div>
+
+    <button class="date-button" type="button" (click)="loadDashboard()" [disabled]="loading">
+      <lucide-icon [img]="loading ? icons.RefreshCw : icons.Clock" [size]="16"> </lucide-icon>
+
+      {{ loading ? 'Refreshing...' : 'Live Data' }}
+    </button>
+  </div>
+
+  <!-- Error -->
+  @if (errorMessage) {
+    <div class="dashboard-error">
+      <span>{{ errorMessage }}</span>
+
+      <button type="button" (click)="loadDashboard()">Retry</button>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="dashboard-loading">Loading dashboard data...</div>
+  } @else {
+    <!-- Statistics -->
+    <section class="stats-grid">
+      @for (stat of stats; track stat.label) {
+        <article class="stat-card">
+          <div class="stat-top">
+            <span>{{ stat.label }}</span>
+
+            <div class="stat-icon" [class]="stat.icon">
+              @if (stat.icon === 'revenue') {
+                <lucide-icon [img]="icons.IndianRupee" [size]="20"> </lucide-icon>
+              } @else if (stat.icon === 'orders') {
+                <lucide-icon [img]="icons.ShoppingBag" [size]="20"> </lucide-icon>
+              } @else if (stat.icon === 'products') {
+                <lucide-icon [img]="icons.Package" [size]="20"> </lucide-icon>
+              } @else {
+                <lucide-icon [img]="icons.Users" [size]="20"> </lucide-icon>
+              }
+            </div>
+          </div>
+
+          <h2>
+            @if (stat.icon === 'revenue') {
+              {{ formatCurrency(stat.value) }}
+            } @else {
+              {{ stat.value.toLocaleString() }}
+            }
+          </h2>
+
+          <div class="stat-detail">
+            {{ stat.detail }}
+          </div>
+        </article>
+      }
+    </section>
+
+    <!-- Revenue Chart and Stock Alerts -->
+    <section class="dashboard-grid">
+      <!-- Revenue Chart -->
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <div>
+            <h3>Revenue Overview</h3>
+            <p>Monthly revenue performance</p>
+          </div>
+
+          <span class="panel-period">{{ currentYear }}</span>
+        </div>
+
+        <div class="chart-placeholder">
+          <div class="chart-y-labels">
+            @for (value of chartYLabels; track $index) {
+              <span>{{ formatCompactCurrency(value) }}</span>
+            }
+          </div>
+
+          <div class="chart-area">
+            <div class="chart-grid-lines">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <svg viewBox="0 0 700 220" preserveAspectRatio="none" class="revenue-chart">
+              <defs>
+                <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#3b82f6" stop-opacity=".25"></stop>
+
+                  <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"></stop>
+                </linearGradient>
+              </defs>
+
+              <path [attr.d]="chartAreaPath" fill="url(#revenueFill)"></path>
+
+              <path
+                [attr.d]="chartLinePath"
+                fill="none"
+                stroke="#3b82f6"
+                stroke-width="3"
+                vector-effect="non-scaling-stroke"
+              ></path>
+            </svg>
+
+            <div class="chart-months">
+              @for (month of monthlyRevenue; track month.month) {
+                <span>{{ month.month }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Stock Alerts -->
+      <article class="panel stock-panel">
+        <div class="panel-heading">
+          <div>
+            <h3>Stock Alerts</h3>
+            <p>Products that need attention</p>
+          </div>
+
+          <span class="alert-count"> {{ stockAlerts.length }} Alerts </span>
+        </div>
+
+        @if (stockAlerts.length === 0) {
+          <div class="empty-state">
+            <lucide-icon [img]="icons.TrendingUp" [size]="24"> </lucide-icon>
+
+            <p>No low-stock products right now.</p>
+          </div>
+        } @else {
+          @for (product of stockAlerts; track product.id) {
+            <div class="stock-alert">
+              <div class="stock-alert-icon">
+                <lucide-icon [img]="icons.AlertTriangle" [size]="18"> </lucide-icon>
+              </div>
+
+              <div class="stock-product-info">
+                <strong>{{ product.name }}</strong>
+                <small> Only {{ product.stock }} units remaining </small>
+              </div>
+
+              <span class="stock-number">
+                {{ product.stock }}
+              </span>
+            </div>
+          }
+        }
+
+        <a routerLink="/products" class="stock-link"> View products → </a>
+      </article>
+    </section>
+
+    <!-- Recent Orders -->
+    <section class="panel orders-panel">
+      <div class="panel-heading">
+        <div>
+          <h3>Recent Orders</h3>
+          <p>A quick look at your latest transactions</p>
+        </div>
+
+        <a routerLink="/orders" class="view-all"> View all orders → </a>
+      </div>
+
+      @if (recentOrders.length === 0) {
+        <div class="empty-state">No orders have been placed yet.</div>
+      } @else {
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Items</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (order of recentOrders; track order.id) {
+                <tr>
+                  <td class="order-id">
+                    {{ formatOrderId(order.id) }}
+                  </td>
+
+                  <td>
+                    <div class="customer-cell">
+                      <strong>{{ order.customerName }}</strong>
+                      <small>{{ order.customerEmail }}</small>
+                    </div>
+                  </td>
+
+                  <td>
+                    {{ order.createdAt | date: 'dd MMM yyyy' }}
+                  </td>
+
+                  <td>{{ order.items.length }}</td>
+
+                  <td class="amount">
+                    {{ formatCurrency(order.totalAmount) }}
+                  </td>
+
+                  <td>
+                    <span class="status" [class]="order.orderStatus.toLowerCase()">
+                      {{ order.orderStatus }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <!-- Top Products -->
+    <section class="panel top-products-panel">
+      <div class="panel-heading">
+        <div>
+          <h3>Top Selling Products</h3>
+          <p>Products ranked by quantities sold</p>
+        </div>
+
+        <a routerLink="/products" class="view-all"> View products → </a>
+      </div>
+
+      @if (topProducts.length === 0) {
+        <div class="empty-state">No product sales recorded yet.</div>
+      } @else {
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Units Sold</th>
+                <th>Revenue</th>
+                <th>Current Stock</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (product of topProducts; track product.id) {
+                <tr>
+                  <td class="product-name">
+                    {{ product.name }}
+                  </td>
+
+                  <td>{{ product.category }}</td>
+
+                  <td>{{ product.sold }}</td>
+
+                  <td class="amount">
+                    {{ formatCurrency(product.revenue) }}
+                  </td>
+
+                  <td>
+                    <span class="product-stock" [class.low-stock]="product.stock <= 10">
+                      {{ product.stock }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+</div>

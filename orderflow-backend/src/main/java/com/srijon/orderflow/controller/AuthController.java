@@ -1,5 +1,7 @@
 package com.srijon.orderflow.controller;
 
+import com.srijon.orderflow.dto.auth.LoginRequestDto;
+import com.srijon.orderflow.dto.auth.LoginResponseDto;
 import com.srijon.orderflow.dto.auth.RegisterRequestDto;
 import com.srijon.orderflow.dto.auth.RegisterResponseDto;
 import com.srijon.orderflow.service.AuthService;
@@ -21,5 +23,13 @@ public class AuthController {
             @Valid @RequestBody RegisterRequestDto requestDto){
 
         return authService.register(requestDto);
+    }
+
+    @PostMapping("/login")
+    public LoginResponseDto login(
+            @RequestBody LoginRequestDto loginRequestDto
+            ){
+
+        return authService.login(loginRequestDto);
     }
 }

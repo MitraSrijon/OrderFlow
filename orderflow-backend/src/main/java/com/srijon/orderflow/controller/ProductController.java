@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +29,7 @@ public class ProductController {
     private final ProductService productService;
 
     //Getting all the products
+    @PreAuthorize("hasAnyRole('ADMIN' , 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<Page<ProductResponseDto>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
@@ -67,6 +69,7 @@ public class ProductController {
     }
 
     //Get a specific product by giving id
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id){
 
@@ -76,6 +79,7 @@ public class ProductController {
     }
 
     //Creating a product
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ProductResponseDto> createProduct(@Valid @RequestBody ProductRequestDto productRequestDto){
 
@@ -85,6 +89,7 @@ public class ProductController {
     }
 
     //Updating a product
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(
             @PathVariable Long id,
@@ -97,6 +102,7 @@ public class ProductController {
     }
 
     //Deleting a product
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public  ResponseEntity<Void> deleteProduct(@PathVariable Long id){
 
@@ -106,6 +112,7 @@ public class ProductController {
     }
 
     //Searching a product
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     @GetMapping("/search")
     public ResponseEntity<Page<ProductResponseDto>> searchProducts(
             @RequestParam String name,
@@ -151,7 +158,8 @@ public class ProductController {
                 productService.searchProducts(name.trim(), pageable));
     }
 
-    //Searchhing a product with category ID
+    //Searching a product with category ID
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     @GetMapping("/category/{categoryId}")
     public Page<ProductResponseDto> getProductsByCategory(
             @PathVariable Long categoryId,
@@ -192,6 +200,7 @@ public class ProductController {
     }
 
     //Updating the stock of any particular product
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/stock")
     public ProductResponseDto  updateStock(
             @PathVariable Long id,

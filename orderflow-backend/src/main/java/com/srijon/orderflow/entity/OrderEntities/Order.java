@@ -1,5 +1,6 @@
 package com.srijon.orderflow.entity.OrderEntities;
 
+import com.srijon.orderflow.entity.User;
 import com.srijon.orderflow.enums.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -23,6 +24,10 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id" , nullable = false)
+    private User user;
 
     @NotBlank
     private String customerName;

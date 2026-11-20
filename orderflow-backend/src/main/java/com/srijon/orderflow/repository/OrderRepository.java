@@ -1,7 +1,6 @@
 package com.srijon.orderflow.repository;
 
 import com.srijon.orderflow.entity.OrderEntities.Order;
-import jakarta.persistence.Id;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import com.srijon.orderflow.enums.OrderStatus;
@@ -22,4 +21,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             LocalDateTime endDate,
             Pageable pageable
     );
+
+    Page<Order> findByUser_EmailIgnoreCase(String email, Pageable pageable);
 }

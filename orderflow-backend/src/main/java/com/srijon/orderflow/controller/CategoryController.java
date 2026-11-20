@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,6 +25,7 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
+    @PreAuthorize("hasAnyRole('ADMIN' , 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<Page<CategoryResponseDto>> getAllCategories(
             @RequestParam(defaultValue = "0") int page,
@@ -61,12 +63,14 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getAllCategories(pageable));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN' , 'CUSTOMER')")
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponseDto> getCategoryById(
             @PathVariable Long id) {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<CategoryResponseDto> createCategory(
             @Valid @RequestBody CategoryRequestDto categoryRequestDto) {
@@ -74,6 +78,7 @@ public class CategoryController {
                 .body(categoryService.createCategory(categoryRequestDto));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponseDto> updateCategory(
             @PathVariable Long id,
@@ -82,6 +87,7 @@ public class CategoryController {
                 categoryService.updateCategory(id, categoryRequestDto));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);

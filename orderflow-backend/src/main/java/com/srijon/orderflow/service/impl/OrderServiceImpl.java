@@ -6,16 +6,20 @@ import com.srijon.orderflow.dto.OrderDto.OrderRequestDto;
 import com.srijon.orderflow.entity.OrderEntities.Order;
 import com.srijon.orderflow.entity.OrderEntities.OrderItem;
 import com.srijon.orderflow.entity.Product;
+import com.srijon.orderflow.entity.User;
 import com.srijon.orderflow.enums.OrderStatus;
 import com.srijon.orderflow.mapper.OrderMapper;
 import com.srijon.orderflow.repository.OrderRepository;
 import com.srijon.orderflow.repository.ProductRepository;
+import com.srijon.orderflow.repository.UserRepository;
 import com.srijon.orderflow.service.OrderService;
 import com.srijon.orderflow.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -36,10 +40,23 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
     private final ProductService productService;
     private final OrderMapper orderMapper;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
     public OrderResponseDto placeOrder(OrderRequestDto requestDto) {
+
+        //Get the authenticated user email
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        //Retrieving the actual user from the dataase
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Authenticated user not found"
+                ));
 
         //If client sends 2 request for same product it sums  up the quantity
         Map<Long, Integer> consolidatedItems = requestDto.getItems()
@@ -60,8 +77,9 @@ public class OrderServiceImpl implements OrderService {
                 ));
 
         Order order = new Order();
-        order.setCustomerName(requestDto.getCustomerName());
-        order.setCustomerEmail(requestDto.getCustomerEmail());
+        order.setUser(user);
+        order.setCustomerName(user.getName());
+        order.setCustomerEmail(user.getEmail());
         order.setOrderStatus(OrderStatus.PENDING);
 
         BigDecimal totalAmount = BigDecimal.ZERO;
@@ -113,6 +131,22 @@ public class OrderServiceImpl implements OrderService {
                         HttpStatus.NOT_FOUND,
                         "Order not found"
                 ));
+
+        Authentication authentication = SecurityContextHolder.getContext()
+                .getAuthentication();
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(authority ->
+                        authority.getAuthority().equals("ROLE_ADMIN"));
+
+        if(!isAdmin && !order.getUser().getEmail().equalsIgnoreCase(authentication.getName())){
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You are not authorized to view this order"
+            );
+        }
 
         return orderMapper.toOrderResponseDto(order);
     }
@@ -176,11 +210,15 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<OrderResponseDto> getOrdersByCustomerEmail(
-            String email, Pageable pageable) {
+    public Page<OrderResponseDto> getMyOrders(
+            Pageable pageable) {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
 
         return orderRepository
-                .findByCustomerEmailIgnoreCase(email, pageable)
+                .findByUser_EmailIgnoreCase(email, pageable)
                 .map(orderMapper::toOrderResponseDto);
     }
 

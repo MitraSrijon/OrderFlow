@@ -20,7 +20,7 @@ public interface OrderService {
 
     Page<OrderResponseDto> getOrdersByStatus(OrderStatus status, Pageable pageable);
 
-    Page<OrderResponseDto> getOrdersByCustomerEmail(String email, Pageable pageable);
+    Page<OrderResponseDto> getMyOrders(Pageable pageable);
 
     Page<OrderResponseDto> getOrdersByDateRange(
             LocalDateTime startDate,

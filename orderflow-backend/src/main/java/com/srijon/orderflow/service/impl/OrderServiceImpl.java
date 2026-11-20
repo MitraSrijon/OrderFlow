@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -131,6 +132,22 @@ public class OrderServiceImpl implements OrderService {
                         "Order not found"
                 ));
 
+        Authentication authentication = SecurityContextHolder.getContext()
+                .getAuthentication();
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(authority ->
+                        authority.getAuthority().equals("ROLE_ADMIN"));
+
+        if(!isAdmin && !order.getUser().getEmail().equalsIgnoreCase(authentication.getName())){
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You are not authorized to view this order"
+            );
+        }
+
         return orderMapper.toOrderResponseDto(order);
     }
 
@@ -193,11 +210,15 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<OrderResponseDto> getOrdersByCustomerEmail(
-            String email, Pageable pageable) {
+    public Page<OrderResponseDto> getMyOrders(
+            Pageable pageable) {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
 
         return orderRepository
-                .findByCustomerEmailIgnoreCase(email, pageable)
+                .findByUser_EmailIgnoreCase(email, pageable)
                 .map(orderMapper::toOrderResponseDto);
     }
 
